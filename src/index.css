@@ -9919,3 +9919,49 @@ and
 }
 
 /* === EXPERIENCE REDESIGN PATCH END === */
+
+
+/* === KINETIC UTF8 FIX START === */
+
+/*
+  Do not use a text character such as âœ¦ here.
+  The separator is drawn with CSS, so Windows/Git/Vercel encoding
+  can no longer turn it into mojibake like "Ã¢Å“Â¦".
+*/
+
+.kinetic-item .kinetic-separator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  margin-left: 12px;
+  border-radius: 1px;
+  background: rgba(255,255,255,.58);
+  transform: rotate(45deg);
+  transform-origin: center;
+  font-size: 0;
+  line-height: 0;
+}
+
+.kinetic-item:hover .kinetic-separator {
+  background: rgba(255,255,255,.92);
+}
+
+/* Keep the marquee clean on small screens */
+@media (max-width: 699px) {
+  .kinetic-item {
+    gap: 18px;
+    padding: 13px 10px;
+    font-size: 9px;
+    letter-spacing: .15em;
+  }
+
+  .kinetic-item .kinetic-separator {
+    width: 5px;
+    height: 5px;
+    flex-basis: 5px;
+    margin-left: 8px;
+  }
+}
+
+/* === KINETIC UTF8 FIX END === */

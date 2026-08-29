@@ -706,7 +706,7 @@ function HomePage({ navigate }) {
             {[0, 1].map((set) => (
               <div className="flex shrink-0 items-center" key={set}>
                 {['PARTNERSHIP', 'CAMPAIGNS', 'CONTENT', 'CUSTOMER INSIGHT', 'TRADE MARKETING', 'REPORTING'].map((item) => (
-                  <span className="kinetic-item" key={`${set}-${item}`}>{item}<i>âœ¦</i></span>
+                  <span className="kinetic-item" key={`${set}-${item}`}>{item}<i className="kinetic-separator" aria-hidden="true" /></span>
                 ))}
               </div>
             ))}
