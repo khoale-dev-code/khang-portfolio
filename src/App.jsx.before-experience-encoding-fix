@@ -1119,12 +1119,12 @@ function HomePage({ navigate }) {
                       <span>roles</span>
                     </div>
                     <div className="experience-overview__card">
-                      <strong>2023 &rarr; 2026</strong>
+                      <strong>2023 â†’ 2026</strong>
                       <span>growth journey</span>
                     </div>
                     <div className="experience-overview__card">
                       <strong>Marketing</strong>
-                      <span>partnership &middot; trade &middot; sales</span>
+                      <span>partnership Â· trade Â· sales</span>
                     </div>
                   </div>
                 </div>
