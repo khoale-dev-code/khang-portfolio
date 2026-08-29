@@ -1307,107 +1307,197 @@ function HomePage({ navigate }) {
           </div>
         </section>
 
-        <section id="contact" className="contact-section contact-section--light">
-          <div className="contact-grid-bg" aria-hidden="true" />
-          <div className="contact-orb contact-orb-a" aria-hidden="true" />
-          <div className="contact-orb contact-orb-b" aria-hidden="true" />
+        <section
+  id="contact"
+  className="contact-section contact-section--light"
+>
+  <div
+    className="contact-grid-bg"
+    aria-hidden="true"
+  />
 
-          <div className="relative mx-auto max-w-[1540px] px-5 py-20 sm:px-8 md:py-24 lg:px-12 lg:py-28">
-            <span className="tiny-label contact-kicker" data-reveal>
-              07 / LETâ€™S MAKE SOMETHING MOVE
+  <div
+    className="contact-orb contact-orb-a"
+    aria-hidden="true"
+  />
+
+  <div
+    className="contact-orb contact-orb-b"
+    aria-hidden="true"
+  />
+
+  <div className="relative mx-auto max-w-[1540px] px-5 py-20 sm:px-8 md:py-24 lg:px-12 lg:py-28">
+
+    {/* Section label */}
+    <span
+      className="tiny-label contact-kicker"
+      data-reveal
+    >
+      07 / LET&apos;S MAKE SOMETHING MOVE
+    </span>
+
+    <div
+      className="contact-shell"
+      data-reveal
+    >
+
+      {/* LEFT CONTENT */}
+      <div className="contact-shell__left">
+
+        <span className="contact-eyebrow">
+          Open to internships, full-time roles and collaboration.
+        </span>
+
+        <h2 className="contact-title">
+          Have a role,
+          <br />
+          campaign or <span>challenge?</span>
+        </h2>
+
+        <p className="contact-intro">
+          I&apos;m available for marketing, partnership, content and
+          campaign coordination opportunities. If you think my profile
+          fits your team, feel free to reach out and I&apos;ll respond
+          as soon as possible.
+        </p>
+
+        <div className="contact-chip-row">
+          <span>Based in Ho Chi Minh City</span>
+          <span>Available for 2026 roles</span>
+          <span>Marketing / Partnership / Content</span>
+        </div>
+
+      </div>
+
+
+      {/* RIGHT CONTACT CARDS */}
+      <div className="contact-shell__right">
+
+        {/* EMAIL */}
+        <a
+          href="mailto:khangvo7799@gmail.com"
+          className="contact-card"
+          data-cursor="MAIL"
+          aria-label="Send email to Vo Phuc Hoang Khang"
+        >
+          <div className="contact-card__text">
+            <span>Email</span>
+
+            <strong>
+              khangvo7799@gmail.com
+            </strong>
+
+            <p>
+              Best for role details, interviews and portfolio requests.
+            </p>
+          </div>
+
+          <div
+            className="contact-card__icon"
+            aria-hidden="true"
+          >
+            <ArrowUpRight />
+          </div>
+        </a>
+
+
+        {/* PHONE */}
+        <a
+          href="tel:+84911666957"
+          className="contact-card"
+          data-cursor="CALL"
+          aria-label="Call Vo Phuc Hoang Khang"
+        >
+          <div className="contact-card__text">
+            <span>Phone</span>
+
+            <strong>
+              (+84) 911 666 957
+            </strong>
+
+            <p>
+              Quickest way to connect for urgent communication.
+            </p>
+          </div>
+
+          <div
+            className="contact-card__icon"
+            aria-hidden="true"
+          >
+            <ArrowUpRight />
+          </div>
+        </a>
+
+
+        {/* CV */}
+        <a
+          href="/Vo-Phuc-Hoang-Khang-CV.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="contact-card"
+          data-cursor="PDF"
+          aria-label="Open Vo Phuc Hoang Khang CV in PDF format"
+        >
+          <div className="contact-card__text">
+
+            <span>
+              R&eacute;sum&eacute;
             </span>
 
-            <div className="contact-shell" data-reveal>
-              <div className="contact-shell__left">
-                <span className="contact-eyebrow">
-                  Open to internships, full-time roles and collaboration.
-                </span>
+            <strong>
+              Open CV / PDF
+            </strong>
 
-                <h2 className="contact-title">
-                  Have a role,
-                  <br />
-                  campaign or <span>challenge?</span>
-                </h2>
+            <p>
+              Review experience, selected work and measurable outcomes.
+            </p>
 
-                <p className="contact-intro">
-                  Iâ€™m available for marketing, partnership, content and campaign
-                  coordination opportunities. If you think my profile fits your
-                  team, feel free to reach out and Iâ€™ll respond as soon as possible.
-                </p>
-
-                <div className="contact-chip-row">
-                  <span>Based in Ho Chi Minh City</span>
-                  <span>Available for 2026 roles</span>
-                  <span>Marketing / Partnership / Content</span>
-                </div>
-              </div>
-
-              <div className="contact-shell__right">
-                <a
-                  href="mailto:khangvo7799@gmail.com"
-                  className="contact-card"
-                  data-cursor="MAIL"
-                >
-                  <div className="contact-card__text">
-                    <span>Email</span>
-                    <strong>khangvo7799@gmail.com</strong>
-                    <p>Best for role details, interviews and portfolio requests.</p>
-                  </div>
-
-                  <div className="contact-card__icon" aria-hidden="true">
-                    <ArrowUpRight />
-                  </div>
-                </a>
-
-                <a
-                  href="tel:+84911666957"
-                  className="contact-card"
-                  data-cursor="CALL"
-                >
-                  <div className="contact-card__text">
-                    <span>Phone</span>
-                    <strong>(+84) 911 666 957</strong>
-                    <p>Quickest way to connect for urgent communication.</p>
-                  </div>
-
-                  <div className="contact-card__icon" aria-hidden="true">
-                    <ArrowUpRight />
-                  </div>
-                </a>
-
-                <a
-                  href="/Vo-Phuc-Hoang-Khang-CV.pdf"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="contact-card"
-                  data-cursor="PDF"
-                >
-                  <div className="contact-card__text">
-                    <span>RÃ©sumÃ©</span>
-                    <strong>Open CV / PDF</strong>
-                    <p>Review experience, selected work and measurable outcomes.</p>
-                  </div>
-
-                  <div className="contact-card__icon" aria-hidden="true">
-                    <ArrowUpRight />
-                  </div>
-                </a>
-              </div>
-            </div>
-
-            <div className="contact-footer">
-              <div className="contact-footer__meta">
-                <span>Â© 2026 VO PHUC HOANG KHANG</span>
-                <span>MARKETING EXECUTIVE Â· HCMC</span>
-              </div>
-
-              <a href="#top" className="contact-toplink">
-                <span>Back to top</span>
-                <ArrowUpRight />
-              </a>
-            </div>
           </div>
-        </section>
+
+          <div
+            className="contact-card__icon"
+            aria-hidden="true"
+          >
+            <ArrowUpRight />
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+
+    {/* FOOTER META */}
+    <div className="contact-footer">
+
+      <div className="contact-footer__meta">
+
+        <span>
+          &copy; 2026 VO PHUC HOANG KHANG
+        </span>
+
+        <span>
+          MARKETING EXECUTIVE &middot; HCMC
+        </span>
+
+      </div>
+
+
+      <a
+        href="#top"
+        className="contact-toplink"
+        aria-label="Back to top"
+      >
+        <span>
+          Back to top
+        </span>
+
+        <ArrowUpRight />
+      </a>
+
+    </div>
+
+  </div>
+</section>
       </main>
     </div>
   )
