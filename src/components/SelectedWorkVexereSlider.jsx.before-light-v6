@@ -1,0 +1,201 @@
+import { useEffect, useState } from 'react'
+
+const slides = [
+  {
+    src: '/vexere-activation.png',
+    label: 'ACTIVATION',
+    title: 'Partnership activation',
+    description: 'On-site partnership marketing execution.',
+  },
+  {
+    src: '/vexere-booth.png',
+    label: 'ON-SITE',
+    title: 'Brand presence',
+    description: 'Vexere campaign presence and activation.',
+  },
+  {
+    src: '/vexere-team-studio.png',
+    label: 'TEAM',
+    title: 'Campaign collaboration',
+    description: 'Team collaboration behind partnership marketing work.',
+  },
+]
+
+export default function SelectedWorkVexereSlider() {
+  const [active, setActive] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    if (paused) return undefined
+
+    const timer = window.setInterval(() => {
+      setActive((current) => {
+        return (current + 1) % slides.length
+      })
+    }, 4500)
+
+    return () => {
+      window.clearInterval(timer)
+    }
+  }, [paused])
+
+  const previous = () => {
+    setActive((current) => {
+      if (current === 0) {
+        return slides.length - 1
+      }
+
+      return current - 1
+    })
+  }
+
+  const next = () => {
+    setActive((current) => {
+      return (current + 1) % slides.length
+    })
+  }
+
+  return (
+    <div
+      className="sw-vexere-slider"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      <div className="sw-vexere-stage">
+
+        {slides.map((slide, index) => (
+          <figure
+            className={`sw-vexere-slide ${
+              index === active ? 'is-active' : ''
+            }`}
+            key={slide.src}
+            aria-hidden={index !== active}
+          >
+
+            <img
+              src={slide.src}
+              alt=""
+              aria-hidden="true"
+              className="sw-vexere-backdrop"
+            />
+
+            <img
+              src={slide.src}
+              alt={slide.title}
+              className="sw-vexere-photo"
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+
+            <div
+              className="sw-vexere-gradient"
+              aria-hidden="true"
+            />
+
+            <figcaption className="sw-vexere-caption">
+              <span>{slide.label}</span>
+
+              <strong>
+                {slide.title}
+              </strong>
+
+              <p>
+                {slide.description}
+              </p>
+            </figcaption>
+
+          </figure>
+        ))}
+
+
+        <div className="sw-vexere-top">
+
+          <span className="sw-vexere-count">
+            {String(active + 1).padStart(2, '0')}
+            <i>/</i>
+            {String(slides.length).padStart(2, '0')}
+          </span>
+
+
+          <div className="sw-vexere-dots">
+
+            {slides.map((slide, index) => (
+              <button
+                type="button"
+                key={slide.src}
+                className={
+                  index === active
+                    ? 'is-active'
+                    : ''
+                }
+                onClick={() => setActive(index)}
+                aria-label={`Show campaign image ${index + 1}`}
+              >
+                <span />
+              </button>
+            ))}
+
+          </div>
+
+        </div>
+
+
+        <div className="sw-vexere-arrows">
+
+          <button
+            type="button"
+            onClick={previous}
+            aria-label="Previous image"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M15 18 9 12l6-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+
+          <button
+            type="button"
+            onClick={next}
+            aria-label="Next image"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="m9 18 6-6-6-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+        </div>
+
+
+        {!paused && (
+          <div
+            key={active}
+            className="sw-vexere-progress"
+            aria-hidden="true"
+          />
+        )}
+
+      </div>
+    </div>
+  )
+}
