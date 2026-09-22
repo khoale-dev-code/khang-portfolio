@@ -1,148 +1,33 @@
+'use client'
+
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import SelectedWorkGeneraliCard from './components/SelectedWorkGeneraliCard'
-import { useEffect, useMemo, useRef, useState } from 'react'
 import SelectedWorkAcademicSlider from './components/SelectedWorkAcademicSlider'
 import CampaignCarousel from './components/CampaignCarousel'
 import SelectedWorkVexereSlider from './components/SelectedWorkVexereSlider'
+import { defaultSiteContent } from './data/default-site-content'
+import { deepMerge, isSectionVisible, projectByKey, projectBySlug, splitLines } from './lib/cms'
 
-const navItems = [
-  ['Profile', '#about'],
-  ['Impact', '#impact'],
-  ['Work', '#work'],
-  ['Experience', '#experience'],
-  ['Contact', '#contact'],
-]
+const CmsContext = createContext(defaultSiteContent)
+const useCms = () => useContext(CmsContext)
 
-const experiences = [
-  {
-    period: 'May 2026 - Aug 2026',
-    company: 'Vexere Trading Service Co., Ltd.',
-    role: 'Partnership Marketing Intern',
-    bullets: [
-      'Managed 16 partnership campaigns in Q2/2026, achieving 167% of quarterly KPI.',
-      'Coordinated partnership projects end-to-end, from outreach and proposal to activation and reporting.',
-      'Managed multiple stakeholders and concurrent projects, keeping timelines and deliverables aligned.',
-      'Generated 39,800 reach and 503 traffic, exceeding targets by 59.2% and 101.2%.',
-    ],
-  },
-  {
-    period: 'Sep 2024 - Feb 2025',
-    company: 'Phu Si 1 Trading & Import-Export Service Co., Ltd.',
-    role: 'Trade Marketing Intern',
-    bullets: [
-      'Supported 2-4 monthly trade activations for paint products.',
-      'Tracked 8-12 POSM materials across dealer campaigns and in-store displays.',
-      'Updated campaign trackers and reports using Excel and Google Sheets.',
-      'Coordinated with sales teams to support display execution and rollout follow-ups.',
-    ],
-  },
-  {
-    period: 'Mar 2023 - Jul 2023',
-    company: 'Generali Vietnam Life Insurance Company Limited',
-    role: 'Marketing & Sales Intern',
-    bullets: [
-      'Supported 10-15 daily lead engagements across customer touchpoints.',
-      'Updated 20-30 weekly lead records in CRM and Excel.',
-      'Collected customer insights and feedback for targeted communication.',
-      'Assisted with campaign coordination and engagement tracking.',
-    ],
-  },
-]
+function getSiteAvatarUrl(site) {
+  const value =
+    typeof site?.avatarUrl === 'string'
+      ? site.avatarUrl.trim()
+      : ''
 
-const projectData = {
-  vexere: {
-    slug: 'vexere-partnership-marketing',
-    eyebrow: 'Partnership Marketing / Q2 2026',
-    company: 'Vexere Trading Service Co., Ltd.',
-    title: '16 partnership campaigns. One quarter. 167% KPI.',
-    intro: 'A recruiter-first case study of partnership campaign coordination, from outreach and proposal to activation, stakeholder alignment and reporting, supported by selected work and activation photos.',
-    stats: [
-      ['167%', 'Quarterly KPI achieved'],
-      ['16', 'Partnership campaigns'],
-      ['39.8K', 'Reach generated'],
-      ['503', 'Traffic generated'],
-    ],
-    facts: [
-      ['Role', 'Partnership Marketing Intern'],
-      ['Period', 'May - Aug 2026'],
-      ['Scope', 'Partnership campaign coordination'],
-      ['Focus', 'Outreach / Activation / Reporting'],
-    ],
-    responsibilities: [
-      'Coordinated partnership projects end-to-end, from outreach and proposal to activation and reporting.',
-      'Managed multiple stakeholders and concurrent projects, ensuring timelines and deliverables were aligned.',
-      'Tracked campaign outcomes and supported reporting against quarterly targets.',
-    ],
-    outcomes: [
-      'Managed 16 partnership campaigns in Q2/2026 and achieved 167% of quarterly KPI.',
-      'Generated 39,800 reach, exceeding target by 59.2%.',
-      'Generated 503 traffic, exceeding target by 101.2%.',
-    ],
-    gallery: [
-      {
-        src: '/vexere-activation.png',
-        title: 'Brand activation moment',
-        note: 'Selected on-site photo from the Vexere partnership marketing experience.',
-      },
-      {
-        src: '/vexere-booth.png',
-        title: 'Booth execution',
-        note: 'A closer view of the branded setup and activation environment.',
-      },
-      {
-        src: '/vexere-team-studio.png',
-        title: 'Team collaboration',
-        note: 'A selected team photo from the internship period.',
-      },
-    ],
-  },
-  event: {
-    slug: 'ufm-marketing-event',
-    eyebrow: 'Academic Project  /  UFM',
-    company: 'University of Finance - Marketing',
-    title: 'A 5-person team. 50 participants. 4 promotion channels.',
-    intro: 'An academic marketing event project centered on team leadership, multi-channel promotion and event execution.',
-    stats: [
-      ['5', 'Team members led'],
-      ['50', 'Participants'],
-      ['4', 'Promotion channels'],
-      ['01', 'Event delivered'],
-    ],
-    facts: [
-      ['Role', 'Team Leader'],
-      ['Project', 'Succulent Planting Event'],
-      ['Audience', '50 participants'],
-      ['Focus', 'Promotion  /  Coordination  /  Execution'],
-    ],
-    responsibilities: [
-      'Led a 5-member team to organize a succulent planting event for 50 participants.',
-      'Managed promotion across 4 channels.',
-      'Coordinated event execution with the project team.',
-    ],
-    outcomes: [
-      'Delivered the event for 50 participants.',
-      'Coordinated a 5-member working team.',
-      'Executed promotion across 4 channels.',
-    ],
-  },
+  return value || defaultSiteContent.site.avatarUrl
 }
 
-const skillGroups = [
-  {
-    number: '01',
-    title: 'Marketing & Content',
-    items: ['Content Writing', 'Copywriting - Social & Email', 'Campaign Coordination', 'Customer Insight & Communication'],
-  },
-  {
-    number: '02',
-    title: 'Tools',
-    items: ['Microsoft Excel', 'Power BI', 'SPSS', 'Google Workspace', 'Canva'],
-  },
-  {
-    number: '03',
-    title: 'Professional',
-    items: ['Customer Communication', 'Stakeholder Coordination', 'Problem Solving', 'Multitasking'],
-  },
-]
+function handleAvatarError(event) {
+  const image = event.currentTarget
+
+  if (image.dataset.fallbackApplied === 'true') return
+
+  image.dataset.fallbackApplied = 'true'
+  image.src = defaultSiteContent.site.avatarUrl
+}
 
 const ArrowUpRight = ({ className = 'size-4' }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -163,10 +48,11 @@ const MenuIcon = ({ open }) => (
   </span>
 )
 
-function useRoute() {
-  const [pathname, setPathname] = useState(() => window.location.pathname)
+function useRoute(initialPath = '/') {
+  const [pathname, setPathname] = useState(initialPath)
 
   useEffect(() => {
+    setPathname(window.location.pathname)
     const onPop = () => setPathname(window.location.pathname)
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
@@ -281,13 +167,15 @@ function SectionLabel({ index, children, inverse = false }) {
 }
 
 function WordLoop() {
-  const words = useMemo(() => ['STRATEGY', 'PARTNERSHIPS', 'CONTENT', 'REPORTING'], [])
+  const { hero } = useCms()
+  const words = useMemo(() => hero.rotationWords?.length ? hero.rotationWords : ['STRATEGY'], [hero.rotationWords])
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    const timer = setInterval(() => setIndex((current) => (current + 1) % words.length), 1900)
-    return () => clearInterval(timer)
-  }, [words.length])
+    setIndex(0)
+    const timer = window.setInterval(() => setIndex((current) => (current + 1) % words.length), 1900)
+    return () => window.clearInterval(timer)
+  }, [words])
 
   return (
     <span className="word-window" aria-live="polite">
@@ -296,192 +184,82 @@ function WordLoop() {
   )
 }
 
-function PerformanceMockup({ compact = false }) {
+function VexereProjectPreview({ project }) {
+  const gallery = project?.gallery || []
+  const metrics = project?.sliderMetrics || []
   return (
-    <div className={`performance-mockup ${compact ? 'is-compact' : ''}`} aria-label="Conceptual campaign performance visualization">
-      <div className="mockup-toolbar">
-        <div className="flex items-center gap-2">
-          <span className="mock-dot" /><span className="mock-dot" /><span className="mock-dot" />
+    <div className="vexere-preview is-case" aria-label="Vexere partnership marketing photo preview">
+      <div className="vexere-preview-head"><span>{project?.eyebrow}</span><span>Q2 / 2026</span></div>
+      <div className="vexere-photo-grid">
+        <figure className="vexere-photo vexere-photo-main">
+          <img src={gallery[0]?.src || '/vexere-activation.png'} alt={gallery[0]?.title || 'Vexere partnership marketing activation'} />
+          <figcaption><span>Activation</span><strong>{gallery[0]?.title || 'Selected work environment'}</strong></figcaption>
+        </figure>
+        <div className="vexere-photo-stack">
+          <figure className="vexere-photo vexere-photo-portrait"><img src={gallery[2]?.src || '/vexere-team-studio.png'} alt={gallery[2]?.title || 'Vexere internship team'} /></figure>
+          <figure className="vexere-photo vexere-photo-booth"><img src={gallery[1]?.src || '/vexere-booth.png'} alt={gallery[1]?.title || 'Vexere branded booth'} /></figure>
         </div>
-        <span>PARTNERSHIP / Q2 2026</span>
       </div>
-      <div className="mockup-grid">
-        <div className="mock-card mock-card-main">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <span className="mock-kicker">KPI PERFORMANCE</span>
-              <strong>167%</strong>
-            </div>
-            <span className="mock-pill">+67%</span>
-          </div>
-          <svg className="mock-chart" viewBox="0 0 520 190" preserveAspectRatio="none" aria-hidden="true">
-            <path className="chart-grid" d="M0 45H520M0 95H520M0 145H520" />
-            <path className="chart-line" d="M0 160 C55 145 72 128 120 134 S205 122 245 92 S320 105 350 70 S445 54 520 22" />
-            <circle className="chart-point" cx="520" cy="22" r="5" />
-          </svg>
-        </div>
-        <div className="mock-card"><span className="mock-kicker">CAMPAIGNS</span><strong>16</strong><small>Q2 total</small></div>
-        <div className="mock-card"><span className="mock-kicker">REACH</span><strong>39.8K</strong><small>+59.2% vs target</small></div>
-        <div className="mock-card"><span className="mock-kicker">TRAFFIC</span><strong>503</strong><small>+101.2% vs target</small></div>
+      <div className="vexere-metric-row">
+        {metrics.slice(0, 4).map((metric) => <div key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong></div>)}
       </div>
     </div>
   )
 }
 
-function VexereProjectPreview({ caseMode = false }) {
+function AcademicProjectPreview({ project }) {
+  const gallery = project?.gallery || []
+  const teamMetric = project?.sliderMetrics?.find((item) => /team/i.test(item.label))
+  const projectName = project?.facts?.find((item) => item.label === 'Project')?.value || 'Succulent Planting Event'
   return (
-    <div className={`vexere-preview ${caseMode ? 'is-case' : ''}`} aria-label="Vexere partnership marketing photo preview">
-      <div className="vexere-preview-head">
-        <span>VEXERE / PARTNERSHIP MARKETING</span>
-        <span>Q2 / 2026</span>
+    <div className="academic-preview is-case" aria-label="Academic project photo preview">
+      <div className="academic-preview-main">
+        <img src={gallery[0]?.src || '/academic-event-booth.jpg'} alt={gallery[0]?.title || 'Succulent planting event booth'} />
       </div>
-
-      <div className="vexere-photo-grid">
-        <figure className="vexere-photo vexere-photo-main">
-          <img src="/vexere-activation.png" alt="Vexere partnership marketing activation" />
-          <figcaption>
-            <span>Activation</span>
-            <strong>Selected work environment</strong>
-          </figcaption>
-        </figure>
-
-        <div className="vexere-photo-stack">
-          <figure className="vexere-photo vexere-photo-portrait">
-            <img src="/vexere-team-studio.png" alt="Vexere internship team photo" />
-          </figure>
-
-          <figure className="vexere-photo vexere-photo-booth">
-            <img src="/vexere-booth.png" alt="Vexere branded booth execution" />
-          </figure>
-        </div>
+      <div className="academic-preview-side">
+        <div className="academic-preview-card metric-card"><span>Team</span><strong>{teamMetric?.value || '05'}</strong><small>members led</small></div>
+        <div className="academic-preview-card image-card"><img src={gallery[1]?.src || '/academic-event-team.jpg'} alt={gallery[1]?.title || 'Succulent planting event group photo'} /></div>
       </div>
-
-      <div className="vexere-metric-row">
-        <div><span>KPI</span><strong>167%</strong></div>
-        <div><span>Campaigns</span><strong>16</strong></div>
-        <div><span>Reach</span><strong>39.8K</strong></div>
-        <div><span>Traffic</span><strong>503</strong></div>
-      </div>
+      <div className="academic-preview-badge badge-a"><span>Project</span><strong>{projectName}</strong></div>
+      <div className="academic-preview-badge badge-b"><span>Promotion</span><strong>4 channels / 50 participants</strong></div>
     </div>
   )
 }
 
 function VexereProjectGallery({ gallery = [] }) {
   if (!gallery.length) return null
-
   return (
     <section className="vexere-gallery-section">
       <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-40">
         <SectionLabel index="02">Selected campaign photos</SectionLabel>
-
         <div className="vexere-gallery-intro" data-reveal>
           <h2>From reporting numbers to real activation moments.</h2>
           <p>Selected photos add context to the internship experience while the case study keeps the measurable outcomes front and center.</p>
         </div>
-
         <div className="vexere-gallery-grid">
           {gallery.map((item, index) => (
-            <figure className={`vexere-gallery-item vexere-gallery-item-${index + 1}`} key={item.src} data-reveal>
-              <div className="vexere-gallery-media">
-                <img src={item.src} alt={item.title} />
-              </div>
-              <figcaption>
-                <span>0{index + 1}</span>
-                <div>
-                  <strong>{item.title}</strong>
-                  <p>{item.note}</p>
-                </div>
-              </figcaption>
+            <figure className={`vexere-gallery-item vexere-gallery-item-${index + 1}`} key={`${item.src}-${index}`} data-reveal>
+              <div className="vexere-gallery-media"><img src={item.src} alt={item.title} /></div>
+              <figcaption><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{item.title}</strong><p>{item.note}</p></div></figcaption>
             </figure>
           ))}
         </div>
       </div>
     </section>
-  )
-}
-function EventMockup() {
-  return (
-    <div className="event-mockup" aria-label="Conceptual academic event campaign visualization">
-      <div className="event-poster">
-        <div className="event-poster-top">
-          <span>UFM / MARKETING EVENT</span>
-          <span>01</span>
-        </div>
-        <div className="event-orbit" aria-hidden="true">
-          <span /><span /><span />
-        </div>
-        <div>
-          <span className="event-kicker">SUCCULENT PLANTING</span>
-          <strong>Grow<br />Together.</strong>
-        </div>
-      </div>
-      <div className="event-side">
-        <div className="event-ticket">
-          <span>PARTICIPANTS</span>
-          <strong>50</strong>
-          <small>Academic event</small>
-        </div>
-        <div className="event-ticket dark">
-          <span>PROMOTION</span>
-          <strong>04</strong>
-          <small>Channels</small>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function AcademicProjectPreview({ caseMode = false }) {
-  return (
-    <div className={`academic-preview ${caseMode ? 'is-case' : ''}`} aria-label="Academic project photo preview">
-      <div className="academic-preview-main">
-        <img src="/academic-event-booth.jpg" alt="Succulent planting event booth and team members" />
-      </div>
-
-      <div className="academic-preview-side">
-        <div className="academic-preview-card metric-card">
-          <span>Team</span>
-          <strong>05</strong>
-          <small>members led</small>
-        </div>
-
-        <div className="academic-preview-card image-card">
-          <img src="/academic-event-team.jpg" alt="Succulent planting event group photo" />
-        </div>
-      </div>
-
-      <div className="academic-preview-badge badge-a">
-        <span>Project</span>
-        <strong>Succulent Planting Event</strong>
-      </div>
-
-      <div className="academic-preview-badge badge-b">
-        <span>Promotion</span>
-        <strong>4 channels / 50 participants</strong>
-      </div>
-    </div>
   )
 }
 
 function AcademicProjectGallery({ gallery = [] }) {
   if (!gallery.length) return null
-
   return (
     <section className="case-gallery-section">
       <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12">
         <SectionLabel index="02">Event gallery</SectionLabel>
-
         <div className="academic-gallery-grid">
           {gallery.map((item, index) => (
-            <figure className={`academic-gallery-item ${index === 0 ? 'is-large' : 'is-small'}`} key={item.src} data-reveal>
-              <div className="academic-gallery-media">
-                <img src={item.src} alt={item.title} />
-              </div>
-              <figcaption>
-                <span>{index === 0 ? '01' : '02'}</span>
-                <strong>{item.title}</strong>
-                <p>{item.note}</p>
-              </figcaption>
+            <figure className={`academic-gallery-item ${index === 0 ? 'is-large' : 'is-small'}`} key={`${item.src}-${index}`} data-reveal>
+              <div className="academic-gallery-media"><img src={item.src} alt={item.title} /></div>
+              <figcaption><span>{String(index + 1).padStart(2, '0')}</span><strong>{item.title}</strong><p>{item.note}</p></figcaption>
             </figure>
           ))}
         </div>
@@ -490,31 +268,32 @@ function AcademicProjectGallery({ gallery = [] }) {
   )
 }
 
-function PhoneCampaignMockup() {
+function PhoneCampaignMockup({ project }) {
+  const stats = project?.stats || []
+  const campaign = stats.find((item) => /campaign/i.test(item.label))?.value || '16'
+  const reach = stats.find((item) => /reach/i.test(item.label))?.value || '39.8K'
+  const kpi = stats.find((item) => /kpi/i.test(item.label))?.value || '167%'
   return (
     <div className="phone-stage" aria-label="Conceptual social campaign mobile mockup">
       <div className="phone-shell">
         <div className="phone-notch" />
         <div className="phone-screen">
-          <div className="phone-brand"><span>VK / CAMPAIGN</span><span>â€¢â€¢â€¢</span></div>
-          <div className="phone-visual">
-            <span className="phone-no">16</span>
-            <span className="phone-label">PARTNERSHIP<br />ACTIVATIONS</span>
-          </div>
-          <div className="phone-copy">
-            <strong>Build the connection.<br />Measure the outcome.</strong>
-            <span>PARTNERSHIP / PERFORMANCE / 2026</span>
-          </div>
+          <div className="phone-brand"><span>VK / CAMPAIGN</span><span>•••</span></div>
+          <div className="phone-visual"><span className="phone-no">{campaign}</span><span className="phone-label">PARTNERSHIP<br />ACTIVATIONS</span></div>
+          <div className="phone-copy"><strong>Build the connection.<br />Measure the outcome.</strong><span>PARTNERSHIP / PERFORMANCE / 2026</span></div>
         </div>
       </div>
-      <div className="floating-note note-a"><span>REACH</span><strong>39.8K</strong></div>
-      <div className="floating-note note-b"><span>KPI</span><strong>167%</strong></div>
+      <div className="floating-note note-a"><span>REACH</span><strong>{reach}</strong></div>
+      <div className="floating-note note-b"><span>KPI</span><strong>{kpi}</strong></div>
     </div>
   )
 }
 
 function Header({ progress, menuOpen, setMenuOpen }) {
+  const content = useCms()
+  const { navigation, site } = content
   const [scrolled, setScrolled] = useState(false)
+  const navItems = (navigation.items || []).filter((item) => !item.section || isSectionVisible(content, item.section))
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 18)
@@ -534,21 +313,15 @@ function Header({ progress, menuOpen, setMenuOpen }) {
         <div className="header-progress" style={{ transform: `scaleX(${progress})` }} />
         <div className="mx-auto flex h-[74px] max-w-[1540px] items-center justify-between px-5 sm:px-8 lg:px-12">
           <a href="#top" className="brand-mark" data-cursor="TOP" onClick={() => setMenuOpen(false)}>
-            <span className="brand-orb brand-avatar"><img src="/cvimg-000.png" alt="Vo Phuc Hoang Khang avatar" /></span>
-            <span className="hidden sm:block">VO PHUC HOANG KHANG</span>
+            <span className="brand-orb brand-avatar"><img src={getSiteAvatarUrl(site)} onError={handleAvatarError} alt={`${site.name} avatar`} /></span>
+            <span className="hidden sm:block">{site.name}</span>
           </a>
-
           <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary navigation">
-            {navItems.map(([label, href]) => (
-              <a key={label} href={href} data-cursor="GO" className="nav-link">{label}</a>
-            ))}
+            {navItems.map((item) => <a key={item.label} href={item.href} data-cursor="GO" className="nav-link">{item.label}</a>)}
           </nav>
-
           <div className="flex items-center gap-3">
-            <a href="mailto:khangvo7799@gmail.com" data-cursor="MAIL" className="magnetic-button hidden sm:inline-flex">LET’S TALK <ArrowUpRight /></a>
-            <button type="button" className="menu-button lg:hidden" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
-              <MenuIcon open={menuOpen} />
-            </button>
+            <a href={`mailto:${site.email}`} data-cursor="MAIL" className="magnetic-button hidden sm:inline-flex">{navigation.ctaLabel} <ArrowUpRight /></a>
+            <button type="button" className="menu-button lg:hidden" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}><MenuIcon open={menuOpen} /></button>
           </div>
         </div>
       </header>
@@ -556,15 +329,11 @@ function Header({ progress, menuOpen, setMenuOpen }) {
       <div className={`mobile-menu ${menuOpen ? 'is-open' : ''}`} aria-hidden={!menuOpen}>
         <div className="mx-auto flex h-full max-w-[1540px] flex-col justify-between px-5 pb-8 pt-28 sm:px-8">
           <nav aria-label="Mobile navigation">
-            {navItems.map(([label, href], index) => (
-              <a key={label} href={href} onClick={() => setMenuOpen(false)} className="mobile-nav-link">
-                <span>{label}</span><span>0{index + 1}</span>
-              </a>
+            {navItems.map((item, index) => (
+              <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)} className="mobile-nav-link"><span>{item.label}</span><span>{String(index + 1).padStart(2, '0')}</span></a>
             ))}
           </nav>
-          <div className="flex items-end justify-between border-t border-neutral-300 pt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
-            <span>Marketing Executive</span><span>HCMC  /  2026</span>
-          </div>
+          <div className="flex items-end justify-between border-t border-neutral-300 pt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500"><span>{site.role}</span><span>{site.location} / {site.year}</span></div>
         </div>
       </div>
     </>
@@ -572,127 +341,357 @@ function Header({ progress, menuOpen, setMenuOpen }) {
 }
 
 function HeroProofCard({ value, label }) {
-  return (
-    <div className="hero-proof-card" data-reveal>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  )
+  return <div className="hero-proof-card" data-reveal><span>{label}</span><strong>{value}</strong></div>
 }
 
 function Hero() {
-  const proofItems = [
-    ['167%', 'Quarterly KPI'],
-    ['16', 'Campaigns'],
-    ['39.8K', 'Reach'],
-    ['503', 'Traffic'],
-  ]
+  const { hero, site } = useCms()
+  const avatarUrl = site.avatarUrl || '/cvimg-000.png'
 
   return (
-    <section id="top" className="hero-section">
+    <section id="top" className="hero-section hero-section-v84">
       <div className="hero-grid" aria-hidden="true" />
       <div className="hero-glow hero-glow-a" aria-hidden="true" />
       <div className="hero-glow hero-glow-b" aria-hidden="true" />
 
-      <div className="relative mx-auto grid min-h-[100svh] max-w-[1540px] grid-cols-1 px-5 pb-8 pt-[104px] sm:px-8 sm:pb-10 lg:grid-cols-12 lg:px-12 lg:pb-12 lg:pt-[112px]">
-        <div className="flex min-h-[640px] flex-col justify-between lg:col-span-7 lg:min-h-[calc(100svh-150px)] lg:pr-10">
+      <div className="hero-layout-v84 relative mx-auto max-w-[1540px] px-5 pb-8 pt-[104px] sm:px-8 sm:pb-10 lg:px-12 lg:pb-12 lg:pt-[112px]">
+        <div className="hero-content-v84">
           <div>
             <div className="hero-meta hero-enter hero-enter-1">
               <span className="status-dot status-dot-coral" />
-              <span>Marketing Executive / Ho Chi Minh City</span>
-              <span className="hidden md:inline">Open to opportunities</span>
+              <span>{hero.status}</span>
+              <span className="hidden md:inline">{hero.availability}</span>
             </div>
 
             <div className="mt-7 flex flex-wrap gap-3 hero-enter hero-enter-2">
-              <span className="hero-pill">Partnership marketing</span>
-              <span className="hero-pill">Campaign coordination</span>
-              <span className="hero-pill">Content and reporting</span>
+              {hero.pills?.map((item) => (
+                <span className="hero-pill" key={item}>
+                  {item}
+                </span>
+              ))}
             </div>
 
-            <div className="py-12 lg:py-10">
+            <div className="hero-message-v84">
               <div className="hero-kicker hero-enter hero-enter-2">
-                MARKETING THAT MOVES FROM INSIGHT TO ACTION
+                {hero.kicker}
               </div>
 
-              <h1 className="hero-title marketing-title" aria-label="Turn attention into action">
-                <span className="hero-line"><span>TURN</span></span>
-                <span className="hero-line hero-line-accent"><span>ATTENTION</span></span>
-                <span className="hero-line"><span>INTO ACTION.</span></span>
+              <h1
+                className="hero-title marketing-title"
+                aria-label={hero.titleLines?.map((line) => line.text).join(' ')}
+              >
+                {hero.titleLines?.map((line) => (
+                  <span
+                    key={line.text}
+                    className={`hero-line ${line.accent ? 'hero-line-accent' : ''}`}
+                  >
+                    <span>{line.text}</span>
+                  </span>
+                ))}
               </h1>
 
               <p className="hero-rotation hero-enter hero-enter-3">
-                Powered by <WordLoop /> and built for measurable growth.
+                {hero.rotationPrefix} <WordLoop /> {hero.rotationSuffix}
               </p>
 
               <p className="hero-copy hero-enter hero-enter-4">
-                I connect audience insight, partnership opportunities and campaign execution into marketing work that is clear, collaborative and measurable.
+                {hero.copy}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-4 hero-enter hero-enter-5">
-              <a href="#work" className="primary-cta" data-cursor="VIEW">
-                Explore selected work <ArrowUpRight />
+            <div className="hero-actions-v84 flex flex-wrap gap-4 hero-enter hero-enter-5">
+              <a
+                href={hero.primaryCta?.href || '#work'}
+                className="primary-cta"
+                data-cursor={hero.primaryCta?.cursor || 'VIEW'}
+              >
+                {hero.primaryCta?.label}
+                <ArrowUpRight />
               </a>
-              <a href="/Vo-Phuc-Hoang-Khang-CV.pdf" target="_blank" rel="noreferrer" className="secondary-cta" data-cursor="PDF">
-                View CV <ArrowUpRight />
+
+              <a
+                href={hero.secondaryCta?.href || site.cvUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="secondary-cta"
+                data-cursor={hero.secondaryCta?.cursor || 'PDF'}
+              >
+                {hero.secondaryCta?.label}
+                <ArrowUpRight />
               </a>
             </div>
-          </div>
-
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {proofItems.map(([value, label]) => (
-              <HeroProofCard key={label} value={value} label={label} />
-            ))}
           </div>
         </div>
 
-        <div className="relative mt-8 lg:col-span-5 lg:mt-0">
-          <div className="hero-stage hero-enter hero-enter-3" data-cursor="HELLO">
+        <div className="hero-visual-v84">
+          <div
+            className="hero-stage hero-enter hero-enter-3"
+            data-cursor="HELLO"
+          >
             <div className="hero-stage-top">
-              <span>PORTFOLIO / 2026</span>
-              <span>PERSONAL BRAND</span>
+              <span>{hero.stageTopLeft}</span>
+              <span>{hero.stageTopRight}</span>
             </div>
 
             <div className="hero-stage-photo">
-              <img src="/cvimg-000.png" alt="Vo Phuc Hoang Khang" className="portrait-image" />
+              <img
+                src={avatarUrl}
+                alt={site.name}
+                className="portrait-image"
+                onError={(event) => {
+                  if (!event.currentTarget.src.endsWith('/cvimg-000.png')) {
+                    event.currentTarget.src = '/cvimg-000.png'
+                  }
+                }}
+              />
+
               <div className="portrait-soft" />
 
-              <div className="hero-floating-card card-one">
-                <span>Primary focus</span>
-                <strong>Partnership marketing</strong>
-              </div>
-
-              <div className="hero-floating-card card-two">
-                <span>Best known for</span>
-                <strong>16 campaigns / 167% KPI</strong>
-              </div>
+              {hero.floatingCards?.map((item, index) => (
+                <div
+                  key={item.label}
+                  className={`hero-floating-card ${index === 0 ? 'card-one' : 'card-two'}`}
+                >
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </div>
+              ))}
             </div>
 
             <div className="hero-stage-bottom">
-              <div>
-                <span>Approach</span>
-                <strong>Insight + execution + reporting</strong>
-              </div>
-              <div>
-                <span>Based in</span>
-                <strong>Ho Chi Minh City</strong>
-              </div>
+              {hero.stageBottom?.map((item) => (
+                <div key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+
+        <div className="hero-stats-v84">
+          {hero.proofItems?.map((item) => (
+            <HeroProofCard
+              key={item.label}
+              value={item.value}
+              label={item.label}
+            />
+          ))}
         </div>
       </div>
     </section>
   )
 }
 
+function SelectedProjectCard({ card, index, openCase }) {
+  const content = useCms()
+  if (card.projectKey === 'generali') return <SelectedWorkGeneraliCard content={card} />
+
+  const project = projectByKey(content, card.projectKey)
+  if (!project) return null
+
+  const isDark = card.theme === 'dark'
+  return (
+    <article className={`project-card ${isDark ? 'project-card-dark' : 'project-card-light'}`} style={{ '--stack-index': index }}>
+      <div className="project-card-grid">
+        <div className="project-copy">
+          <div><span className="project-no">{card.number}</span><span className="project-type">{card.type}</span></div>
+          <div>
+            <h3>{card.titleLines?.map((line) => <span key={line}>{line}<br /></span>)}<em>{card.accent}</em></h3>
+            <p>{card.description}</p>
+            <button type="button" onClick={() => openCase(project.slug)} className={`project-link ${isDark ? '' : 'dark-link'}`} data-cursor="OPEN">View case study <ArrowUpRight className="size-5" /></button>
+          </div>
+        </div>
+        <div className={`project-visual ${card.projectKey === 'vexere' ? 'project-visual-dashboard selected-vexere-visual' : 'selected-academic-visual'}`}>
+          {card.projectKey === 'vexere' ? <SelectedWorkVexereSlider slides={project.sliderSlides} metrics={project.sliderMetrics} /> : <SelectedWorkAcademicSlider slides={project.sliderSlides} metrics={project.sliderMetrics} />}
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function normalizeCredentialText(value, fallback = '') {
+  const normalized = String(value ?? '').trim()
+  return normalized || String(fallback ?? '').trim()
+}
+
+function mergeCredentialObject(defaultValue, currentValue) {
+  if (
+    currentValue &&
+    typeof currentValue === 'object' &&
+    !Array.isArray(currentValue)
+  ) {
+    return {
+      ...defaultValue,
+      ...currentValue,
+    }
+  }
+
+  return {
+    ...defaultValue,
+  }
+}
+
+function CredentialsProof({ skills }) {
+  const defaultSkills = defaultSiteContent.skills || {}
+
+  const education = mergeCredentialObject(
+    defaultSkills.education || {},
+    skills?.education,
+  )
+
+  const certifications = mergeCredentialObject(
+    defaultSkills.certifications || {},
+    skills?.certifications,
+  )
+
+  const shortName = normalizeCredentialText(
+    education.shortName,
+    defaultSkills.education?.shortName,
+  )
+
+  let school = normalizeCredentialText(
+    education.school,
+    defaultSkills.education?.school,
+  )
+
+  if (
+    shortName &&
+    school.toUpperCase().endsWith(shortName.toUpperCase())
+  ) {
+    school = school
+      .slice(0, -shortName.length)
+      .trim()
+  }
+
+  const degree = normalizeCredentialText(
+    education.degree,
+    defaultSkills.education?.degree,
+  )
+
+  const period = normalizeCredentialText(
+    education.period,
+    defaultSkills.education?.period,
+  )
+
+  const primaryCertification = normalizeCredentialText(
+    certifications.primary,
+    defaultSkills.certifications?.primary,
+  )
+
+  const certificationTags =
+    Array.isArray(certifications.tags) &&
+    certifications.tags.length
+      ? certifications.tags
+      : defaultSkills.certifications?.tags || []
+
+  return (
+    <div
+      className="skills-v2-proof credentials-proof"
+      data-reveal
+    >
+      <article className="skills-proof-card education-card credentials-card credentials-card--education">
+        <div className="credentials-card__top">
+          <span className="credentials-card__index">
+            {normalizeCredentialText(
+              education.index,
+              defaultSkills.education?.index,
+            )}
+          </span>
+
+          <span className="credentials-card__kicker">
+            {normalizeCredentialText(
+              education.kicker,
+              defaultSkills.education?.kicker,
+            )}
+          </span>
+        </div>
+
+        <div className="credentials-card__body">
+          <span className="credentials-card__label">
+            {normalizeCredentialText(
+              education.label,
+              defaultSkills.education?.label,
+            )}
+          </span>
+
+          <h3 className="credentials-card__title">
+            <span>{school}</span>
+            {shortName && (
+              <em>{shortName}</em>
+            )}
+          </h3>
+
+          <div className="credentials-card__meta">
+            <div>
+              <span>Degree</span>
+              <strong>{degree}</strong>
+            </div>
+
+            <div>
+              <span>Period</span>
+              <strong>{period}</strong>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article className="skills-proof-card certification-card credentials-card credentials-card--certification">
+        <div className="credentials-card__top">
+          <span className="credentials-card__index">
+            {normalizeCredentialText(
+              certifications.index,
+              defaultSkills.certifications?.index,
+            )}
+          </span>
+
+          <span className="credentials-card__kicker">
+            {normalizeCredentialText(
+              certifications.kicker,
+              defaultSkills.certifications?.kicker,
+            )}
+          </span>
+        </div>
+
+        <div className="credentials-card__body">
+          <span className="credentials-card__label">
+            {normalizeCredentialText(
+              certifications.label,
+              defaultSkills.certifications?.label,
+            )}
+          </span>
+
+          <h3 className="credentials-card__title credentials-card__title--certification">
+            {primaryCertification}
+          </h3>
+
+          <div className="credentials-card__tags">
+            {certificationTags.map((item, index) => (
+              <span key={`${item}-${index}`}>
+                <i aria-hidden="true" />
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div
+          className="credentials-card__orb"
+          aria-hidden="true"
+        />
+      </article>
+    </div>
+  )
+}
+
 function HomePage({ navigate }) {
+  const content = useCms()
+  const { ticker, about, impact, work, campaignOps, experience, skills, contact, site } = content
   const [menuOpen, setMenuOpen] = useState(false)
   const progress = useScrollProgress()
   useRevealObserver('home')
 
-  const openCase = (slug) => {
-    navigate(`/case-study/${slug}`)
-  }
+  const openCase = (slug) => navigate(`/case-study/${slug}`)
 
   return (
     <div className="min-h-screen overflow-x-clip text-neutral-950">
@@ -701,915 +700,132 @@ function HomePage({ navigate }) {
       <main>
         <Hero />
 
-        <div className="kinetic-strip" aria-hidden="true">
-          <div className="kinetic-track">
-            {[0, 1].map((set) => (
-              <div className="flex shrink-0 items-center" key={set}>
-                {['PARTNERSHIP', 'CAMPAIGNS', 'CONTENT', 'CUSTOMER INSIGHT', 'TRADE MARKETING', 'REPORTING'].map((item) => (
-                  <span className="kinetic-item" key={`${set}-${item}`}>{item}<i className="kinetic-separator" aria-hidden="true" /></span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+        {isSectionVisible(content, 'ticker') && <div className="kinetic-strip" aria-hidden="true"><div className="kinetic-track">{[0, 1].map((set) => <div className="flex shrink-0 items-center" key={set}>{ticker.items?.map((item) => <span className="kinetic-item" key={`${set}-${item}`}>{item}<i className="kinetic-separator" aria-hidden="true" /></span>)}</div>)}</div></div>}
 
-        <section id="about" className="section-shell">
+        {isSectionVisible(content, 'about') && <section id="about" className="section-shell">
           <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-40">
-            <SectionLabel index="01">Profile</SectionLabel>
+            <SectionLabel index={about.sectionIndex}>{about.sectionLabel}</SectionLabel>
             <div className="grid gap-14 lg:grid-cols-12">
-              <div className="lg:col-span-3" data-reveal>
-                <p className="max-w-[16rem] text-sm leading-6 text-neutral-500">
-                  A marketing profile built around coordination, communication and measurable execution.
-                </p>
-              </div>
-
+              <div className="lg:col-span-3" data-reveal><p className="max-w-[16rem] text-sm leading-6 text-neutral-500">{about.sideNote}</p></div>
               <div className="lg:col-span-9">
-                <h2 className="statement-title" data-reveal>
-                  I like marketing that brings <span>story, channel and execution</span> into the same room, so results can be measured and improved.
-                </h2>
-
-                <div className="mt-12 grid gap-7 border-t border-neutral-300 pt-7 md:grid-cols-2" data-reveal>
-                  <div className="feature-note">
-                    <span>Working style</span>
-                    <strong>Clear briefs. Fast follow-up. Real ownership.</strong>
-                  </div>
-
-                  <div className="feature-note">
-                    <span>Best fit</span>
-                    <strong>Digital, partnership and brand-support marketing roles.</strong>
-                  </div>
-                </div>
-
-                <div className="mt-7 grid gap-7 md:grid-cols-2" data-reveal>
-                  <p className="body-copy">
-                    Final-year Marketing student at University of Finance - Marketing with practical experience across partnership marketing, trade marketing, customer engagement and campaign coordination.
-                  </p>
-
-                  <p className="body-copy">
-                    Interested in strategic marketing, consumer behavior, brand development and digital-focused roles, with a working style centered on ownership, stakeholder alignment and reporting.
-                  </p>
-                </div>
+                <h2 className="statement-title" data-reveal>{about.statementBefore} <span>{about.statementAccent}</span> {about.statementAfter}</h2>
+                <div className="mt-12 grid gap-7 border-t border-neutral-300 pt-7 md:grid-cols-2" data-reveal>{about.featureNotes?.map((item) => <div className="feature-note" key={item.label}><span>{item.label}</span><strong>{item.value}</strong></div>)}</div>
+                <div className="mt-7 grid gap-7 md:grid-cols-2" data-reveal>{about.paragraphs?.map((paragraph) => <p className="body-copy" key={paragraph}>{paragraph}</p>)}</div>
               </div>
             </div>
           </div>
-        </section>
+        </section>}
 
-        <section id="impact" className="impact-section">
+        {isSectionVisible(content, 'impact') && <section id="impact" className="impact-section">
           <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-36">
-            <SectionLabel index="02" inverse>Impact at a glance</SectionLabel>
-            <div className="impact-heading-row">
-              <h2 data-reveal>Numbers that make<br />the work tangible.</h2>
-              <p data-reveal>Selected figures reported in my CV from partnership marketing and academic event work.</p>
-            </div>
-            <div className="impact-grid" data-reveal>
-              {[
-                ['167%', 'Quarterly KPI', 'Partnership Marketing  /  Vexere'],
-                ['16', 'Campaigns', 'Managed in Q2/2026'],
-                ['39.8K', 'Reach', '59.2% above target'],
-                ['503', 'Traffic', '101.2% above target'],
-              ].map(([value, label, sub], index) => (
-                <div className="impact-stat" key={label}>
-                  <span className="impact-index">0{index + 1}</span>
-                  <strong>{value}</strong>
-                  <div><b>{label}</b><span>{sub}</span></div>
-                </div>
-              ))}
-            </div>
+            <SectionLabel index={impact.sectionIndex} inverse>{impact.sectionLabel}</SectionLabel>
+            <div className="impact-heading-row"><h2 data-reveal>{splitLines(impact.title).map((line, index) => <span key={`${line}-${index}`}>{line}{index < splitLines(impact.title).length - 1 && <br />}</span>)}</h2><p data-reveal>{impact.description}</p></div>
+            <div className="impact-grid" data-reveal>{impact.stats?.map((item, index) => <div className="impact-stat" key={item.label}><span className="impact-index">{String(index + 1).padStart(2, '0')}</span><strong>{item.value}</strong><div><b>{item.label}</b><span>{item.sub}</span></div></div>)}</div>
           </div>
-        </section>
+        </section>}
 
-        <section id="work" className="work-section">
+        {isSectionVisible(content, 'work') && <section id="work" className="work-section">
           <div className="mx-auto max-w-[1540px] px-5 pb-28 pt-24 sm:px-8 md:pb-36 md:pt-32 lg:px-12 lg:pb-44">
-            <SectionLabel index="03">Selected work</SectionLabel>
-
+            <SectionLabel index={work.sectionIndex}>{work.sectionLabel}</SectionLabel>
             <div className="selected-work-head">
-
-              <div className="selected-work-head-main" data-reveal>
-
-                <span className="selected-work-kicker">
-                  SELECTED PROJECTS / 2026
-                </span>
-
-                <h2 className="selected-work-title">
-                  Work, framed
-                  <br />
-                  like a <span>case study.</span>
-                </h2>
-
-              </div>
-
-
-              <div className="selected-work-head-side" data-reveal>
-
-                <p>
-                  A focused selection of work showing context,
-                  responsibility, execution and measurable outcomes.
-                </p>
-
-                <div className="selected-work-summary">
-
-                  <div>
-                    <strong>03</strong>
-                    <span>
-                      Selected
-                      <br />
-                      cases
-                    </span>
-                  </div>
-
-                  <div>
-                    <strong>02</strong>
-                    <span>
-                      Professional
-                      <br />
-                      roles
-                    </span>
-                  </div>
-
-                  <div>
-                    <strong>01</strong>
-                    <span>
-                      Academic
-                      <br />
-                      project
-                    </span>
-                  </div>
-
-                </div>
-
-              </div>
-
+              <div className="selected-work-head-main" data-reveal><span className="selected-work-kicker">{work.kicker}</span><h2 className="selected-work-title">{splitLines(work.titleBefore).map((line) => <span key={line}>{line}<br /></span>)}<span>{work.titleAccent}</span></h2></div>
+              <div className="selected-work-head-side" data-reveal><p>{work.description}</p><div className="selected-work-summary">{work.summary?.map((item) => <div key={item.label}><strong>{item.value}</strong><span>{splitLines(item.label).map((line) => <span key={line}>{line}<br /></span>)}</span></div>)}</div></div>
             </div>
-
-            <div className="project-stack">
-              <article className="project-card project-card-dark" style={{ '--stack-index': 0 }}>
-                <div className="project-card-grid">
-                  <div className="project-copy">
-                    <div>
-                      <span className="project-no">01 / 03</span>
-                      <span className="project-type">Partnership Marketing  /  Vexere</span>
-                    </div>
-                    <div>
-                      <h3>16 campaigns.<br />One quarter.<br /><em>167% KPI.</em></h3>
-                      <p>End-to-end coordination from outreach and proposal to activation, stakeholder alignment and reporting.</p>
-                      <button type="button" onClick={() => openCase(projectData.vexere.slug)} className="project-link" data-cursor="OPEN">
-                        View case study <ArrowUpRight className="size-5" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="project-visual project-visual-dashboard selected-vexere-visual">
-                    <SelectedWorkVexereSlider />
-                  </div>
-                </div>
-              </article>
-
-              <article className="project-card project-card-light" style={{ '--stack-index': 1 }}>
-                <div className="project-card-grid">
-                  <div className="project-copy">
-                    <div>
-                      <span className="project-no">02 / 03</span>
-                      <span className="project-type">Academic Marketing Event  /  UFM</span>
-                    </div>
-                    <div>
-                      <h3>Lead a team.<br />Activate 4 channels.<br /><em>Deliver for 50.</em></h3>
-                      <p>A marketing event project combining team leadership, four-channel promotion and coordinated execution.</p>
-                      <button type="button" onClick={() => openCase(projectData.event.slug)} className="project-link dark-link" data-cursor="OPEN">
-                        View case study <ArrowUpRight className="size-5" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="project-visual selected-academic-visual">
-                    <SelectedWorkAcademicSlider />
-                  </div>
-                </div>
-              </article>
-            
-              <SelectedWorkGeneraliCard />
-
-</div>
+            <div className="project-stack">{work.cards?.map((card, index) => <SelectedProjectCard key={card.projectKey} card={card} index={index} openCase={openCase} />)}</div>
           </div>
-        </section>
+        </section>}
 
-                <section className="campaign-ops-section">
+        {isSectionVisible(content, 'campaignOps') && <section className="campaign-ops-section">
           <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-40">
-            <SectionLabel index="04">Campaign operating system</SectionLabel>
-
+            <SectionLabel index={campaignOps.sectionIndex}>{campaignOps.sectionLabel}</SectionLabel>
             <div className="campaign-ops-layout">
-
               <div className="campaign-ops-copy">
-
-                <div data-reveal>
-                  <span className="campaign-ops-eyebrow">
-                    HOW I WORK / PARTNERSHIP MARKETING
-                  </span>
-
-                  <h2>
-                    From first contact
-                    <br />
-                    to final report,
-                    <br />
-                    <span>I keep campaigns moving.</span>
-                  </h2>
-
-                  <p className="campaign-ops-intro">
-                    At Vexere, my partnership marketing scope covered outreach,
-                    proposal, activation coordination, stakeholder alignment
-                    and reporting. In Q2/2026, I managed 16 partnership campaigns
-                    and achieved 167% of quarterly KPI.
-                  </p>
-                </div>
-
-                <div className="campaign-flow">
-
-                  <article className="campaign-flow-step" data-reveal>
-                    <div className="campaign-flow-number">
-                      <span>01</span>
-                    </div>
-
-                    <div>
-                      <span className="campaign-flow-label">
-                        Outreach
-                      </span>
-
-                      <h3>
-                        Start the conversation.
-                      </h3>
-
-                      <p>
-                        Coordinate partner outreach and keep communication
-                        moving toward the next step.
-                      </p>
-                    </div>
-                  </article>
-
-                  <article className="campaign-flow-step" data-reveal>
-                    <div className="campaign-flow-number">
-                      <span>02</span>
-                    </div>
-
-                    <div>
-                      <span className="campaign-flow-label">
-                        Proposal
-                      </span>
-
-                      <h3>
-                        Turn opportunities into a clear plan.
-                      </h3>
-
-                      <p>
-                        Support proposal coordination and align expected
-                        deliverables before activation.
-                      </p>
-                    </div>
-                  </article>
-
-                  <article className="campaign-flow-step" data-reveal>
-                    <div className="campaign-flow-number">
-                      <span>03</span>
-                    </div>
-
-                    <div>
-                      <span className="campaign-flow-label">
-                        Activation
-                      </span>
-
-                      <h3>
-                        Keep people and timelines aligned.
-                      </h3>
-
-                      <p>
-                        Coordinate multiple stakeholders and concurrent
-                        projects while keeping activation timelines on track.
-                      </p>
-                    </div>
-                  </article>
-
-                  <article className="campaign-flow-step" data-reveal>
-                    <div className="campaign-flow-number">
-                      <span>04</span>
-                    </div>
-
-                    <div>
-                      <span className="campaign-flow-label">
-                        Reporting
-                      </span>
-
-                      <h3>
-                        Close the loop with performance.
-                      </h3>
-
-                      <p>
-                        Track campaign results and report outcomes against
-                        agreed performance targets.
-                      </p>
-                    </div>
-                  </article>
-
-                </div>
+                <div data-reveal><span className="campaign-ops-eyebrow">{campaignOps.eyebrow}</span><h2>{splitLines(campaignOps.titleBefore).map((line) => <span key={line}>{line}<br /></span>)}<span>{campaignOps.titleAccent}</span></h2><p className="campaign-ops-intro">{campaignOps.intro}</p></div>
+                <div className="campaign-flow">{campaignOps.flow?.map((step) => <article className="campaign-flow-step" data-reveal key={step.number}><div className="campaign-flow-number"><span>{step.number}</span></div><div><span className="campaign-flow-label">{step.label}</span><h3>{step.title}</h3><p>{step.description}</p></div></article>)}</div>
               </div>
-
-
               <div className="campaign-proof-panel" data-reveal>
-
-                <div className="campaign-proof-header">
-                  <div>
-                    <span>
-                      VEXERE / Q2 2026
-                    </span>
-
-                    <strong>
-                      Partnership Marketing
-                    </strong>
-                  </div>
-
-                  <span className="campaign-proof-status">
-                    REAL WORK
-                  </span>
-                </div>
-
-
-                <CampaignCarousel />
-
-                <div className="campaign-proof-message">
-                  <div>
-                    <span>
-                      Q2 PERFORMANCE
-                    </span>
-
-                    <strong>
-                      16 partnership campaigns.
-                      <br />
-                      167% of quarterly KPI.
-                    </strong>
-                  </div>
-
-                  <p>
-                    Results from campaign coordination,
-                    activation and reporting.
-                  </p>
-                </div>
-
-
-                <div className="campaign-proof-metrics">
-
-                  <div className="campaign-proof-metric">
-                    <span>01 / KPI</span>
-                    <strong>167%</strong>
-                    <small>
-                      quarterly KPI achieved
-                    </small>
-                  </div>
-
-                  <div className="campaign-proof-metric">
-                    <span>02 / CAMPAIGNS</span>
-                    <strong>16</strong>
-                    <small>
-                      managed in Q2/2026
-                    </small>
-                  </div>
-
-                  <div className="campaign-proof-metric">
-                    <span>03 / REACH</span>
-                    <strong>39.8K</strong>
-                    <small>
-                      59.2% above target
-                    </small>
-                  </div>
-
-                  <div className="campaign-proof-metric">
-                    <span>04 / TRAFFIC</span>
-                    <strong>503</strong>
-                    <small>
-                      101.2% above target
-                    </small>
-                  </div>
-
-                </div>
-
+                <div className="campaign-proof-header"><div><span>{campaignOps.panelKicker}</span><strong>{campaignOps.panelTitle}</strong></div><span className="campaign-proof-status">{campaignOps.panelStatus}</span></div>
+                <CampaignCarousel slides={campaignOps.slides} />
+                <div className="campaign-proof-message"><div><span>{campaignOps.proofKicker}</span><strong>{splitLines(campaignOps.proofTitle).map((line) => <span key={line}>{line}<br /></span>)}</strong></div><p>{campaignOps.proofDescription}</p></div>
+                <div className="campaign-proof-metrics">{campaignOps.metrics?.map((metric) => <div className="campaign-proof-metric" key={metric.index}><span>{metric.index}</span><strong>{metric.value}</strong><small>{metric.label}</small></div>)}</div>
               </div>
-
             </div>
           </div>
-        </section>
+        </section>}
 
-        <section id="experience" className="experience-section experience-section--redesign">
+        {isSectionVisible(content, 'experience') && <section id="experience" className="experience-section experience-section--redesign">
           <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-40">
-            <SectionLabel index="05">Experience</SectionLabel>
-
+            <SectionLabel index={experience.sectionIndex}>{experience.sectionLabel}</SectionLabel>
             <div className="experience-layout">
-              <div className="experience-intro" data-reveal>
-                <div className="experience-intro__sticky">
-                  <span className="experience-kicker">Professional journey</span>
-                  <h2 className="experience-title">
-                    Experience
-                    <br />
-                    that shows
-                    <br />
-                    real execution.
-                  </h2>
-                  <p className="experience-summary">
-                    A clearer snapshot of hands-on marketing experience across partnership,
-                    trade marketing and customer engagement. The layout below is rebuilt to
-                    help recruiters scan roles, outcomes and responsibilities faster.
-                  </p>
-
-                  <div className="experience-overview">
-                    <div className="experience-overview__card">
-                      <strong>03</strong>
-                      <span>roles</span>
-                    </div>
-                    <div className="experience-overview__card">
-                      <strong>2023 &rarr; 2026</strong>
-                      <span>growth journey</span>
-                    </div>
-                    <div className="experience-overview__card">
-                      <strong>Marketing</strong>
-                      <span>partnership &middot; trade &middot; sales</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="experience-stack">
-                {experiences.map((item, index) => (
-                  <article key={item.company} className="experience-card" data-reveal>
-                    <div className="experience-card__rail" aria-hidden="true">
-                      <span className="experience-card__dot" />
-                      <span className="experience-card__line" />
-                    </div>
-
-                    <div className="experience-card__meta">
-                      <span className="experience-card__index">0{index + 1}</span>
-                      <span className="experience-card__period">{item.period}</span>
-                    </div>
-
-                    <div className="experience-card__body">
-                      <div className="experience-card__header">
-                        <span className="experience-card__role">{item.role}</span>
-                        <h3>{item.company}</h3>
-                      </div>
-
-                      <ul className="experience-card__list">
-                        {item.bullets.map((bullet) => (
-                          <li key={bullet}>{bullet}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </article>
-                ))}
-              </div>
+              <div className="experience-intro" data-reveal><div className="experience-intro__sticky"><span className="experience-kicker">{experience.kicker}</span><h2 className="experience-title">{splitLines(experience.title).map((line) => <span key={line}>{line}<br /></span>)}</h2><p className="experience-summary">{experience.summary}</p><div className="experience-overview">{experience.overview?.map((item) => <div className="experience-overview__card" key={item.label}><strong>{item.value}</strong><span>{item.label}</span></div>)}</div></div></div>
+              <div className="experience-stack">{experience.items?.map((item, index) => <article key={`${item.company}-${index}`} className="experience-card" data-reveal><div className="experience-card__rail" aria-hidden="true"><span className="experience-card__dot" /><span className="experience-card__line" /></div><div className="experience-card__meta"><span className="experience-card__index">{String(index + 1).padStart(2, '0')}</span><span className="experience-card__period">{item.period}</span></div><div className="experience-card__body"><div className="experience-card__header"><span className="experience-card__role">{item.role}</span><h3>{item.company}</h3></div><ul className="experience-card__list">{item.bullets?.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></div></article>)}</div>
             </div>
           </div>
-        </section>
+        </section>}
 
-
-        <section id="skills" className="skills-v2-section">
+        {isSectionVisible(content, 'skills') && <section id="skills" className="skills-v2-section">
           <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-40">
+            <SectionLabel index={skills.sectionIndex}>{skills.sectionLabel}</SectionLabel>
+            <div className="skills-v2-header"><div data-reveal><span className="skills-v2-eyebrow">{skills.eyebrow}</span><h2 className="skills-v2-title">{splitLines(skills.titleBefore).map((line, index, lines) => <span key={`${line}-${index}`}>{index === lines.length - 1 ? <span>{line}</span> : line}{index < lines.length - 1 && <br />}</span>)}</h2></div><div className="skills-v2-header-side" data-reveal><p>{skills.description}</p><div className="skills-v2-focus">{skills.focus?.map((item) => <span key={item}>{item}</span>)}</div></div></div>
+            <div className="skills-v2-grid">{skills.groups?.map((group, index) => <article key={group.title} className={`skills-v2-card skills-v2-card-${index + 1}`} data-reveal><div className="skills-v2-card-top"><span className="skills-v2-number">{group.number}</span><span className="skills-v2-count">{String(group.items?.length || 0).padStart(2, '0')} capabilities</span></div><div><h3>{group.title}</h3><div className="skills-v2-items">{group.items?.map((item) => <span className="skills-v2-item" key={item}>{item}</span>)}</div></div></article>)}</div>
+            <CredentialsProof skills={skills} />
+          </div>
+        </section>}
 
-            <SectionLabel index="06">
-              Skills & stack
-            </SectionLabel>
-
-            <div className="skills-v2-header">
-
-              <div data-reveal>
-                <span className="skills-v2-eyebrow">
-                  PRACTICAL MARKETING TOOLKIT
-                </span>
-
-                <h2 className="skills-v2-title">
-                  A practical toolkit
-                  <br />
-                  for moving
-                  <br />
-                  <span>marketing work forward.</span>
-                </h2>
+        {isSectionVisible(content, 'contact') && <section id="contact" className="contact-section contact-section--light">
+          <div className="contact-grid-bg" aria-hidden="true" /><div className="contact-orb contact-orb-a" aria-hidden="true" /><div className="contact-orb contact-orb-b" aria-hidden="true" />
+          <div className="relative mx-auto max-w-[1540px] px-5 py-20 sm:px-8 md:py-24 lg:px-12 lg:py-28">
+            <span className="tiny-label contact-kicker" data-reveal>{contact.sectionIndex} / {contact.sectionLabel}</span>
+            <div className="contact-shell" data-reveal>
+              <div className="contact-shell__left"><span className="contact-eyebrow">{contact.eyebrow}</span><h2 className="contact-title">{splitLines(contact.titleBefore).map((line) => <span key={line}>{line}<br /></span>)}<span>{contact.titleAccent}</span></h2><p className="contact-intro">{contact.intro}</p><div className="contact-chip-row">{contact.chips?.map((item) => <span key={item}>{item}</span>)}</div></div>
+              <div className="contact-shell__right">
+                <a href={`mailto:${site.email}`} className="contact-card" data-cursor="MAIL"><div className="contact-card__text"><span>{contact.email?.label}</span><strong>{contact.email?.value || site.email}</strong><p>{contact.email?.description}</p></div><div className="contact-card__icon" aria-hidden="true"><ArrowUpRight /></div></a>
+                <a href={`tel:${site.phoneHref}`} className="contact-card" data-cursor="CALL"><div className="contact-card__text"><span>{contact.phone?.label}</span><strong>{contact.phone?.value || site.phoneDisplay}</strong><p>{contact.phone?.description}</p></div><div className="contact-card__icon" aria-hidden="true"><ArrowUpRight /></div></a>
+                <a href={site.cvUrl} target="_blank" rel="noopener noreferrer" className="contact-card" data-cursor="PDF"><div className="contact-card__text"><span>{contact.cv?.label}</span><strong>{contact.cv?.value}</strong><p>{contact.cv?.description}</p></div><div className="contact-card__icon" aria-hidden="true"><ArrowUpRight /></div></a>
               </div>
-
-              <div className="skills-v2-header-side" data-reveal>
-                <p>
-                  A focused mix of content, campaign coordination,
-                  analytical tools and stakeholder communication
-                  built through practical marketing experience.
-                </p>
-
-                <div className="skills-v2-focus">
-                  <span>Campaign Coordination</span>
-                  <span>Copywriting</span>
-                  <span>Customer Insight</span>
-                  <span>Stakeholder Coordination</span>
-                </div>
-              </div>
-
             </div>
-
-
-            <div className="skills-v2-grid">
-
-              {skillGroups.map((group, index) => (
-                <article
-                  key={group.title}
-                  className={`skills-v2-card skills-v2-card-${index + 1}`}
-                  data-reveal
-                >
-                  <div className="skills-v2-card-top">
-
-                    <span className="skills-v2-number">
-                      {group.number}
-                    </span>
-
-                    <span className="skills-v2-count">
-                      {String(group.items.length).padStart(2, '0')} capabilities
-                    </span>
-
-                  </div>
-
-                  <div>
-                    <h3>
-                      {group.title}
-                    </h3>
-
-                    <div className="skills-v2-items">
-                      {group.items.map((item) => (
-                        <span
-                          className="skills-v2-item"
-                          key={item}
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                </article>
-              ))}
-
-            </div>
-
-
-            <div className="skills-v2-proof" data-reveal>
-
-              <article className="skills-proof-card education-card">
-
-                <div className="skills-proof-index">
-                  <span>04</span>
-                  <span>EDUCATION</span>
-                </div>
-
-                <div className="skills-proof-content">
-                  <span className="skills-proof-label">
-                    University
-                  </span>
-
-                  <h3>
-                    University of Finance - Marketing
-                    <br />
-                    <span>(UFM)</span>
-                  </h3>
-
-                  <p>
-                    Bachelor of Marketing
-                    <span>2022 - 2026</span>
-                  </p>
-                </div>
-
-              </article>
-
-
-              <article className="skills-proof-card certification-card">
-
-                <div className="skills-proof-index">
-                  <span>05</span>
-                  <span>CERTIFICATIONS</span>
-                </div>
-
-                <div className="skills-proof-content">
-
-                  <span className="skills-proof-label">
-                    Credentials
-                  </span>
-
-                  <h3>
-                    HubSpot Content Marketing
-                  </h3>
-
-                  <div className="certification-tags">
-                    <span>APTIS English B2</span>
-                    <span>MOS Word & Excel</span>
-                  </div>
-
-                </div>
-
-              </article>
-
-            </div>
-
+            <div className="contact-footer"><div className="contact-footer__meta"><span>{contact.footerLeft}</span><span>{contact.footerRight}</span></div><a href="#top" className="contact-toplink"><span>{contact.backToTop}</span><ArrowUpRight /></a></div>
           </div>
-        </section>
-
-        <section
-  id="contact"
-  className="contact-section contact-section--light"
->
-  <div
-    className="contact-grid-bg"
-    aria-hidden="true"
-  />
-
-  <div
-    className="contact-orb contact-orb-a"
-    aria-hidden="true"
-  />
-
-  <div
-    className="contact-orb contact-orb-b"
-    aria-hidden="true"
-  />
-
-  <div className="relative mx-auto max-w-[1540px] px-5 py-20 sm:px-8 md:py-24 lg:px-12 lg:py-28">
-
-    {/* Section label */}
-    <span
-      className="tiny-label contact-kicker"
-      data-reveal
-    >
-      07 / LET&apos;S MAKE SOMETHING MOVE
-    </span>
-
-    <div
-      className="contact-shell"
-      data-reveal
-    >
-
-      {/* LEFT CONTENT */}
-      <div className="contact-shell__left">
-
-        <span className="contact-eyebrow">
-          Open to internships, full-time roles and collaboration.
-        </span>
-
-        <h2 className="contact-title">
-          Have a role,
-          <br />
-          campaign or <span>challenge?</span>
-        </h2>
-
-        <p className="contact-intro">
-          I&apos;m available for marketing, partnership, content and
-          campaign coordination opportunities. If you think my profile
-          fits your team, feel free to reach out and I&apos;ll respond
-          as soon as possible.
-        </p>
-
-        <div className="contact-chip-row">
-          <span>Based in Ho Chi Minh City</span>
-          <span>Available for 2026 roles</span>
-          <span>Marketing / Partnership / Content</span>
-        </div>
-
-      </div>
-
-
-      {/* RIGHT CONTACT CARDS */}
-      <div className="contact-shell__right">
-
-        {/* EMAIL */}
-        <a
-          href="mailto:khangvo7799@gmail.com"
-          className="contact-card"
-          data-cursor="MAIL"
-          aria-label="Send email to Vo Phuc Hoang Khang"
-        >
-          <div className="contact-card__text">
-            <span>Email</span>
-
-            <strong>
-              khangvo7799@gmail.com
-            </strong>
-
-            <p>
-              Best for role details, interviews and portfolio requests.
-            </p>
-          </div>
-
-          <div
-            className="contact-card__icon"
-            aria-hidden="true"
-          >
-            <ArrowUpRight />
-          </div>
-        </a>
-
-
-        {/* PHONE */}
-        <a
-          href="tel:+84911666957"
-          className="contact-card"
-          data-cursor="CALL"
-          aria-label="Call Vo Phuc Hoang Khang"
-        >
-          <div className="contact-card__text">
-            <span>Phone</span>
-
-            <strong>
-              (+84) 911 666 957
-            </strong>
-
-            <p>
-              Quickest way to connect for urgent communication.
-            </p>
-          </div>
-
-          <div
-            className="contact-card__icon"
-            aria-hidden="true"
-          >
-            <ArrowUpRight />
-          </div>
-        </a>
-
-
-        {/* CV */}
-        <a
-          href="/Vo-Phuc-Hoang-Khang-CV.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="contact-card"
-          data-cursor="PDF"
-          aria-label="Open Vo Phuc Hoang Khang CV in PDF format"
-        >
-          <div className="contact-card__text">
-
-            <span>
-              R&eacute;sum&eacute;
-            </span>
-
-            <strong>
-              Open CV / PDF
-            </strong>
-
-            <p>
-              Review experience, selected work and measurable outcomes.
-            </p>
-
-          </div>
-
-          <div
-            className="contact-card__icon"
-            aria-hidden="true"
-          >
-            <ArrowUpRight />
-          </div>
-        </a>
-
-      </div>
-    </div>
-
-
-    {/* FOOTER META */}
-    <div className="contact-footer">
-
-      <div className="contact-footer__meta">
-
-        <span>
-          &copy; 2026 VO PHUC HOANG KHANG
-        </span>
-
-        <span>
-          MARKETING EXECUTIVE &middot; HCMC
-        </span>
-
-      </div>
-
-
-      <a
-        href="#top"
-        className="contact-toplink"
-        aria-label="Back to top"
-      >
-        <span>
-          Back to top
-        </span>
-
-        <ArrowUpRight />
-      </a>
-
-    </div>
-
-  </div>
-</section>
+        </section>}
       </main>
     </div>
   )
 }
 
 function CaseStudyPage({ project, navigate }) {
+  const content = useCms()
+  const { caseStudy, site } = content
   const progress = useScrollProgress()
   useRevealObserver(project.slug)
-
   const goHome = () => navigate('/')
+  const isVexere = project.key === 'vexere'
 
   return (
     <div className="case-page min-h-screen text-neutral-950">
       <CustomCursor />
-      <header className="case-header">
-        <div className="header-progress" style={{ transform: `scaleX(${progress})` }} />
-        <div className="mx-auto flex h-[74px] max-w-[1540px] items-center justify-between px-5 sm:px-8 lg:px-12">
-          <button type="button" onClick={goHome} className="case-back" data-cursor="BACK"><ArrowLeft /><span>Back to portfolio</span></button>
-          <span className="hidden text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500 sm:inline">Case Study / 2026</span>
-          <a href="mailto:khangvo7799@gmail.com" className="nav-link" data-cursor="MAIL">Contact</a>
-        </div>
-      </header>
-
+      <header className="case-header"><div className="header-progress" style={{ transform: `scaleX(${progress})` }} /><div className="mx-auto flex h-[74px] max-w-[1540px] items-center justify-between px-5 sm:px-8 lg:px-12"><button type="button" onClick={goHome} className="case-back" data-cursor="BACK"><ArrowLeft /><span>{caseStudy.backLabel}</span></button><span className="hidden text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500 sm:inline">{caseStudy.headerLabel}</span><a href={`mailto:${site.email}`} className="nav-link" data-cursor="MAIL">{caseStudy.contactLabel}</a></div></header>
       <main>
-        <section className="case-hero">
-          <div className="hero-grid" aria-hidden="true" />
-          <div className="relative mx-auto max-w-[1540px] px-5 pb-16 pt-32 sm:px-8 md:pb-24 md:pt-36 lg:px-12 lg:pb-28">
-            <div className="case-eyebrow hero-enter hero-enter-1"><span className="status-dot" />{project.eyebrow}</div>
-            <h1 className="case-title hero-enter hero-enter-2">{project.title}</h1>
-            <div className="case-intro-grid hero-enter hero-enter-3">
-              <p>{project.intro}</p>
-              <span>{project.company}</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="case-visual-block">
-          <div className="mx-auto max-w-[1540px] px-5 sm:px-8 lg:px-12" data-reveal>
-            <div className="case-visual-frame">
-              {project.slug === projectData.vexere.slug ? <VexereProjectPreview /> : <AcademicProjectPreview />}
-            </div>
-            <p className="case-disclaimer">Portfolio visualization based on the scope and numerical results stated in the current CV. Original campaign creative assets were not provided.</p>
-          </div>
-        </section>
-
-        {project.slug === projectData.vexere.slug && (
-          <VexereProjectGallery gallery={project.gallery} />
-        )}
-
-        <section className="case-facts-section">
-          <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12">
-            <SectionLabel index="01">Overview</SectionLabel>
-            <div className="case-facts-grid" data-reveal>
-              {project.facts.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
-            </div>
-          </div>
-        </section>
-
-        <section className="case-dark-section">
-          <div className="mx-auto max-w-[1540px] px-5 py-24 text-white sm:px-8 md:py-32 lg:px-12 lg:py-36">
-            <SectionLabel index="02" inverse>Measured outcomes</SectionLabel>
-            <div className="case-stat-grid" data-reveal>
-              {project.stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}
-            </div>
-          </div>
-        </section>
-
-        <section className="case-content-section">
-          <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-40">
-            <div className="case-content-row" data-reveal>
-              <div><span className="tiny-label">03 / WHAT I OWNED</span><h2>Execution without losing the thread.</h2></div>
-              <ul>{project.responsibilities.map((item) => <li key={item}>{item}</li>)}</ul>
-            </div>
-            <div className="case-content-row" data-reveal>
-              <div><span className="tiny-label">04 / OUTCOME</span><h2>Make the result easy to see.</h2></div>
-              <ul>{project.outcomes.map((item) => <li key={item}>{item}</li>)}</ul>
-            </div>
-          </div>
-        </section>
-
-        {project.slug === projectData.vexere.slug && (
-          <section className="case-phone-section">
-            <div className="mx-auto grid max-w-[1540px] gap-12 px-5 py-24 sm:px-8 md:py-32 lg:grid-cols-12 lg:px-12 lg:py-40">
-              <div className="lg:col-span-5" data-reveal>
-                <span className="tiny-label">05 / VISUAL TRANSLATION</span>
-                <h2 className="mockup-title mt-5">A recruiter-first presentation layer.</h2>
-                <p className="mt-6 max-w-md text-sm leading-6 text-neutral-500">Metrics are reframed into a simple campaign system so the key contribution can be understood before reading every detail.</p>
-              </div>
-              <div className="lg:col-span-7" data-reveal><PhoneCampaignMockup /></div>
-            </div>
-          </section>
-        )}
-
-        <section className="case-next-section">
-          <div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-36">
-            <span className="tiny-label" data-reveal>END OF CASE STUDY</span>
-            <button type="button" onClick={goHome} className="case-next" data-cursor="BACK" data-reveal>
-              <span>Back to selected work</span><ArrowUpRight className="size-8" />
-            </button>
-          </div>
-        </section>
+        <section className="case-hero"><div className="hero-grid" aria-hidden="true" /><div className="relative mx-auto max-w-[1540px] px-5 pb-16 pt-32 sm:px-8 md:pb-24 md:pt-36 lg:px-12 lg:pb-28"><div className="case-eyebrow hero-enter hero-enter-1"><span className="status-dot" />{project.eyebrow}</div><h1 className="case-title hero-enter hero-enter-2">{project.title}</h1><div className="case-intro-grid hero-enter hero-enter-3"><p>{project.intro}</p><span>{project.company}</span></div></div></section>
+        <section className="case-visual-block"><div className="mx-auto max-w-[1540px] px-5 sm:px-8 lg:px-12" data-reveal><div className="case-visual-frame">{isVexere ? <VexereProjectPreview project={project} /> : <AcademicProjectPreview project={project} />}</div><p className="case-disclaimer">{caseStudy.disclaimer}</p></div></section>
+        {isVexere ? <VexereProjectGallery gallery={project.gallery} /> : <AcademicProjectGallery gallery={project.gallery} />}
+        <section className="case-facts-section"><div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12"><SectionLabel index={caseStudy.overviewIndex}>{caseStudy.overviewLabel}</SectionLabel><div className="case-facts-grid" data-reveal>{project.facts?.map((item) => <div key={item.label}><span>{item.label}</span><strong>{item.value}</strong></div>)}</div></div></section>
+        <section className="case-dark-section"><div className="mx-auto max-w-[1540px] px-5 py-24 text-white sm:px-8 md:py-32 lg:px-12 lg:py-36"><SectionLabel index={caseStudy.outcomesIndex} inverse>{caseStudy.outcomesLabel}</SectionLabel><div className="case-stat-grid" data-reveal>{project.stats?.map((item) => <div key={item.label}><strong>{item.value}</strong><span>{item.label}</span></div>)}</div></div></section>
+        <section className="case-content-section"><div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-40"><div className="case-content-row" data-reveal><div><span className="tiny-label">{caseStudy.ownedLabel}</span><h2>{caseStudy.ownedTitle}</h2></div><ul>{project.responsibilities?.map((item) => <li key={item}>{item}</li>)}</ul></div><div className="case-content-row" data-reveal><div><span className="tiny-label">{caseStudy.resultLabel}</span><h2>{caseStudy.resultTitle}</h2></div><ul>{project.outcomes?.map((item) => <li key={item}>{item}</li>)}</ul></div></div></section>
+        {isVexere && <section className="case-phone-section"><div className="mx-auto grid max-w-[1540px] gap-12 px-5 py-24 sm:px-8 md:py-32 lg:grid-cols-12 lg:px-12 lg:py-40"><div className="lg:col-span-5" data-reveal><span className="tiny-label">{caseStudy.visualLabel}</span><h2 className="mockup-title mt-5">{caseStudy.visualTitle}</h2><p className="mt-6 max-w-md text-sm leading-6 text-neutral-500">{caseStudy.visualDescription}</p></div><div className="lg:col-span-7" data-reveal><PhoneCampaignMockup project={project} /></div></div></section>}
+        <section className="case-next-section"><div className="mx-auto max-w-[1540px] px-5 py-24 sm:px-8 md:py-32 lg:px-12 lg:py-36"><span className="tiny-label" data-reveal>{caseStudy.endLabel}</span><button type="button" onClick={goHome} className="case-next" data-cursor="BACK" data-reveal><span>{caseStudy.backToWork}</span><ArrowUpRight className="size-8" /></button></div></section>
       </main>
     </div>
   )
 }
 
-function App() {
-  const { pathname, navigate } = useRoute()
-  const project = Object.values(projectData).find((item) => pathname === `/case-study/${item.slug}`)
+function PortfolioRouter({ initialPath }) {
+  const content = useCms()
+  const { pathname, navigate } = useRoute(initialPath)
+  const slug = pathname.startsWith('/case-study/') ? pathname.replace('/case-study/', '') : ''
+  const project = slug ? projectBySlug(content, slug) : null
 
   useEffect(() => {
-    if (!project && pathname !== '/') {
+    if (!project && pathname !== '/' && pathname.startsWith('/case-study/')) {
       window.history.replaceState({}, '', '/')
     }
   }, [pathname, project])
@@ -1618,4 +834,7 @@ function App() {
   return <HomePage navigate={navigate} />
 }
 
-export default App
+export default function App({ initialContent = defaultSiteContent, initialPath = '/' }) {
+  const content = useMemo(() => deepMerge(defaultSiteContent, initialContent), [initialContent])
+  return <CmsContext.Provider value={content}><PortfolioRouter initialPath={initialPath} /></CmsContext.Provider>
+}

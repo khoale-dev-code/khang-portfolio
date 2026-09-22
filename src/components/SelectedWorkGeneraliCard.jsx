@@ -1,104 +1,43 @@
-import { motion } from 'framer-motion'
+'use client'
 
-const metrics = [
-  {
-    value: '10-15',
-    label: 'Daily lead engagements',
-  },
-  {
-    value: '20-30',
-    label: 'Weekly CRM / Excel updates',
-  },
-]
+export default function SelectedWorkGeneraliCard({ content = {} }) {
+  const metrics = content.metrics || []
+  const tags = content.tags || []
+  const image = content.image || '/generali-team.png'
 
-const tags = [
-  'Customer communication',
-  'CRM & Excel',
-  'Customer insights',
-  'Campaign coordination',
-]
-
-const ease = [0.22, 0.61, 0.36, 1]
-
-export default function SelectedWorkGeneraliCard() {
   return (
-    <motion.article
+    <article
       className="project-card project-card-generali"
-      initial={{
-        opacity: 0,
-        y: 26,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
-      viewport={{
-        once: true,
-        amount: 0.14,
-      }}
-      transition={{
-        duration: 0.65,
-        ease,
-      }}
+      data-reveal
     >
       <div className="project-card-grid generali-work-grid">
-
         <div className="generali-work-copy">
-
           <div className="generali-work-meta">
-            <span>03 / 03</span>
-            <span>MARKETING & SALES / GENERALI</span>
+            <span>{content.number || '03 / 03'}</span>
+            <span>{content.type || 'MARKETING & SALES / GENERALI'}</span>
           </div>
 
-
           <div className="generali-work-copy-main">
-
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 12,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                duration: 0.48,
-                delay: 0.08,
-                ease,
-              }}
-            >
+            <div className="generali-work-copy-content">
               <span className="generali-work-role">
-                Marketing & Sales Intern / Mar 2023 - Jul 2023
+                {content.role}
               </span>
 
               <h3>
-                10-15 daily engagements.
+                {content.title}
                 <br />
-                <span>20-30 weekly updates.</span>
+                <span>{content.titleAccent}</span>
               </h3>
 
-              <p>
-                Supported customer engagement, CRM and Excel updates,
-                customer insight collection, campaign coordination and
-                engagement tracking at Generali Vietnam.
-              </p>
-            </motion.div>
-
+              <p>{content.description}</p>
+            </div>
 
             <a
-              href="#experience"
+              href={content.linkHref || '#experience'}
               className="generali-work-link"
             >
-              <span>VIEW ROLE DETAILS</span>
-
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
+              <span>{content.linkLabel || 'VIEW ROLE DETAILS'}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   d="M7 17 17 7M9 7h8v8"
                   fill="none"
@@ -109,37 +48,27 @@ export default function SelectedWorkGeneraliCard() {
                 />
               </svg>
             </a>
-
           </div>
-
         </div>
 
-
         <div className="generali-work-visual">
-
           <div className="generali-work-panel">
+            <div
+              className="generali-work-panel-glow"
+              aria-hidden="true"
+            />
 
             <div className="generali-work-panel-head">
               <div>
-                <span>GENERALI VIETNAM</span>
-                <strong>Customer engagement support</strong>
+                <span>{content.panelKicker}</span>
+                <strong>{content.panelTitle}</strong>
               </div>
-
-              <span>2023</span>
+              <span>{content.year}</span>
             </div>
 
-
-            <motion.div
-              className="generali-work-media"
-              whileHover={{
-                scale: 0.995,
-              }}
-              transition={{
-                duration: 0.28,
-              }}
-            >
+            <div className="generali-work-media">
               <img
-                src="/generali-team.png"
+                src={image}
                 alt=""
                 aria-hidden="true"
                 className="generali-work-bg"
@@ -150,95 +79,39 @@ export default function SelectedWorkGeneraliCard() {
                 aria-hidden="true"
               />
 
-              <motion.img
-                src="/generali-team.png"
-                alt="Generali Vietnam team"
-                className="generali-work-photo"
-                initial={{
-                  opacity: 0,
-                  scale: 0.97,
-                }}
-                whileInView={{
-                  opacity: 1,
-                  scale: 1,
-                }}
-                viewport={{
-                  once: true,
-                }}
-                transition={{
-                  duration: 0.7,
-                  ease,
-                }}
-              />
-            </motion.div>
+              <div className="generali-work-photo-frame">
+                <img
+                  src={image}
+                  alt="Generali Vietnam team"
+                  className="generali-work-photo"
+                />
+              </div>
 
+              <div className="generali-work-media-badge">
+                <span>TEAM / GENERALI VIETNAM</span>
+              </div>
+            </div>
 
-            <motion.div
-              className="generali-work-results"
-              initial="hidden"
-              whileInView="show"
-              viewport={{
-                once: true,
-              }}
-              variants={{
-                hidden: {},
-                show: {
-                  transition: {
-                    staggerChildren: 0.08,
-                    delayChildren: 0.12,
-                  },
-                },
-              }}
-            >
-
+            <div className="generali-work-results">
               {metrics.map((metric) => (
-                <motion.div
+                <div
                   className="generali-work-metric"
                   key={metric.label}
-                  variants={{
-                    hidden: {
-                      opacity: 0,
-                      y: 8,
-                    },
-                    show: {
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        duration: 0.4,
-                        ease,
-                      },
-                    },
-                  }}
-                  whileHover={{
-                    y: -3,
-                  }}
                 >
                   <strong>{metric.value}</strong>
                   <span>{metric.label}</span>
-                </motion.div>
-              ))}
-
-            </motion.div>
-
-
-            <div className="generali-work-tags">
-              {tags.map((tag) => (
-                <motion.span
-                  key={tag}
-                  whileHover={{
-                    y: -2,
-                  }}
-                >
-                  {tag}
-                </motion.span>
+                </div>
               ))}
             </div>
 
+            <div className="generali-work-tags">
+              {tags.map((tag) => (
+                <span key={tag}>{tag}</span>
+              ))}
+            </div>
           </div>
-
         </div>
-
       </div>
-    </motion.article>
+    </article>
   )
 }
